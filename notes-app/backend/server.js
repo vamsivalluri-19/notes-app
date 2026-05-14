@@ -12,7 +12,19 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS not allowed'));
+  }
+}));
 app.use(express.json());
 
 // serve uploads
@@ -24,6 +36,10 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.get("/", (req, res) => {
   res.send("Notes API Running");
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ ok: true });
 });
 
 app.use("/api/notes", noteRoutes);

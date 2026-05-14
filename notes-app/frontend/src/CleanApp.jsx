@@ -8,7 +8,7 @@ import Toast from './components/Toast'
 import Spinner from './components/Spinner'
 import axios from 'axios'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
 
 export default function CleanApp(){
   const [authUser, setAuthUser] = useState(() => JSON.parse(localStorage.getItem('user') || 'null'))
@@ -116,7 +116,8 @@ export default function CleanApp(){
     try {
       const response = await axios.get(`${API}/api/notes/export`, {
         ...authHeaders(),
-        params: { format: 'csv', search: noteSearch || undefined, pinned: notePinnedOnly ? 'true' : undefined }
+        params: { format: 'csv', search: noteSearch || undefined, pinned: notePinnedOnly ? 'true' : undefined },
+        responseType: 'blob'
       })
       const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')

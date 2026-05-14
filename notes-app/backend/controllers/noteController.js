@@ -1,6 +1,5 @@
 import Note from "../models/Note.js";
 import { Parser } from 'json2csv';
-import User from "../models/User.js";
 
 
 // GET ALL NOTES
@@ -59,7 +58,7 @@ const createNote = async (req, res) => {
     const { title, content, tags = [], pinned = false, audience } = req.body;
 
     const resolvedAudience = audience || (viewerRole === 'staff' ? 'students' : 'staff');
-    const allowedAudiences = viewerRole === 'staff' ? ['students', 'staff', 'all'] : ['staff', 'all', 'students'];
+    const allowedAudiences = viewerRole === 'staff' ? ['students', 'staff', 'all'] : ['staff'];
 
     if (!allowedAudiences.includes(resolvedAudience)) {
       return res.status(400).json({ message: 'Invalid audience' });
@@ -89,9 +88,19 @@ const updateNote = async (req, res) => {
 
   try {
 
+    const existing = await Note.findById(req.params.id);
+    if (!existing) return res.status(404).json({ message: 'Note not found' });
+
+    const canEdit = String(existing.createdBy) === String(req.userId) || req.userRole === 'staff';
+    if (!canEdit) return res.status(403).json({ message: 'Forbidden' });
+
     const updates = { ...req.body };
     if (updates.tags && !Array.isArray(updates.tags)) {
       updates.tags = String(updates.tags).split(',').map(t=>t.trim()).filter(Boolean);
+    }
+
+    if (updates.audience && req.userRole !== 'staff' && updates.audience !== 'staff') {
+      return res.status(400).json({ message: 'Invalid audience' });
     }
 
     const note = await Note.findByIdAndUpdate(
@@ -112,6 +121,12 @@ const updateNote = async (req, res) => {
 const deleteNote = async (req, res) => {
 
   try {
+
+    const existing = await Note.findById(req.params.id);
+    if (!existing) return res.status(404).json({ message: 'Note not found' });
+
+    const canDelete = String(existing.createdBy) === String(req.userId) || req.userRole === 'staff';
+    if (!canDelete) return res.status(403).json({ message: 'Forbidden' });
 
     await Note.findByIdAndDelete(req.params.id);
 
