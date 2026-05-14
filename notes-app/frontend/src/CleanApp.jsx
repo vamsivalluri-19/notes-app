@@ -8,7 +8,12 @@ import Toast from './components/Toast'
 import Spinner from './components/Spinner'
 import axios from 'axios'
 
-const API = (import.meta.env.VITE_API_URL || 'https://notes-app-44s0.onrender.com').replace(/\/$/, '')
+const DEFAULT_API = 'https://notes-app-44s0.onrender.com'
+const envApi = import.meta.env.VITE_API_URL || ''
+const API = (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(envApi)
+  ? DEFAULT_API
+  : (envApi || DEFAULT_API)
+).replace(/\/$/, '')
 
 export default function CleanApp(){
   const [authUser, setAuthUser] = useState(() => JSON.parse(localStorage.getItem('user') || 'null'))
