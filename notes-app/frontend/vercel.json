@@ -1,4 +1,7 @@
 {
+  "env": {
+    "VITE_API_URL": "https://notes-app-44s0.onrender.com"
+  },
   "rewrites": [
     {
       "source": "/(.*)",

@@ -16,4 +16,4 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: CORS_ORIGIN
-        sync: false
+        value: https://notes-app-dusky-eta.vercel.app
